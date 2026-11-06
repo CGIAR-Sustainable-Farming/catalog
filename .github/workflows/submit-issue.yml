@@ -202,6 +202,7 @@ jobs:
             Passed CDH ${{ steps.version.outputs.ref }} profile validation before this PR was opened. The
             **Validate records** check below re-runs the same validation as a required gate.
           labels: submission
+          reviewers: peetmate
           delete-branch: false
 
       - name: Comment PR link on the issue
