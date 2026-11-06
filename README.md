@@ -24,3 +24,16 @@ The website provides an initial empty static STAC root at `/stac/catalog.json`. 
 ## Rights
 
 Source data retain their individual licences and citations. Draft `license` fields describe source claims; they do not establish unconfirmed licensing authority. No source data files are hosted in this repository.
+
+
+## Submit a dataset
+
+Use the [SFP submission form](https://github.com/CGIAR-Sustainable-Farming/catalog/issues/new?template=submit-record.yml), or open a pull request. Prepare YAML in the shared [CDH Metadata Generator](https://cgiar-climate-data-hub.github.io/CDH-metadata-app/), copy its output, and paste it into the SFP form. The shared application's Submit button targets CDH, not SFP. Submissions are public; do not include credentials, private evidence or restricted data.
+
+CDH issue forms, the review template, link checks and issue-to-PR workflow are reused from commit `18e5333f7614ab197dc454774fdc26ba47e82371` under Apache-2.0 (see LICENSE). SFP adaptations change destination, pin validation to v0.5.0, isolate each issue branch, and keep automation opt-in. Dataset-specific licences remain separate.
+
+Issue intake works without automation. Automatic PR creation is **not enabled**: configure a GitHub App scoped to this repository with contents and pull-request write permissions, set `APP_ID` and `APP_PRIVATE_KEY` secrets, then set `SUBMISSION_AUTOMATION_ENABLED=true`. Test a valid and invalid submission before announcing automated intake. The app token allows the resulting PR to trigger validation; ordinary workflow tokens do not reliably trigger subsequent workflows.
+
+Link checks run on relevant PRs and weekly. Their inherited treatment of authentication/rate-limit responses is an availability hint, not proof that an asset is publicly readable or cloud optimized. Reviewers must check real reads. Human reviewer assignments and branch protection still need configuration; no upstream CDH personnel have been assigned to SFP without confirmation.
+
+Immediate catalogue-to-site dispatch remains optional pending a narrowly scoped dispatch credential; the existing daily refresh continues without one. No submission automatically merges, uploads source data, or creates STAC assets.

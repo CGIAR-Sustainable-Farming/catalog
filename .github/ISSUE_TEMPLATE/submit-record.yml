@@ -1,0 +1,36 @@
+# Adapted for SFP on 2026-11-06 from CDH catalog 18e5333f7614ab197dc454774fdc26ba47e82371; Apache-2.0.
+name: Submit metadata record
+description: Submit a CDH-standard metadata record to the SFP Data Hub for review
+title: "[Submission]: "
+labels: [submission]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Prepare and validate your YAML with the
+        [shared CDH Metadata Generator](https://cgiar-climate-data-hub.github.io/CDH-metadata-app/),
+        then copy it here. The shared app's Submit button targets CDH, not SFP.
+        This issue is public: include metadata only, never credentials or restricted data.
+        Submission does not publish a dataset. SFP maintainers review it and prepare a
+        pull request. Automatic issue-to-PR processing is available only after its GitHub
+        App is configured; until then submissions are handled manually.
+
+  - type: input
+    id: record_id
+    attributes:
+      label: Record ID
+      description: The record's `id` field — lowercase letters, digits, and hyphens only.
+      placeholder: e.g. chirts-era5-daily
+    validations:
+      required: true
+
+  - type: textarea
+    id: yaml_content
+    attributes:
+      label: Full YAML record
+      description: >
+        The complete YAML produced by the CDH Metadata Generator's "Generate YAML" step.
+        Paste it here unmodified.
+      render: yaml
+    validations:
+      required: true

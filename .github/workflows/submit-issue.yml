@@ -1,0 +1,216 @@
+# Adapted for SFP on 2026-11-06 from CDH catalog 18e5333f7614ab197dc454774fdc26ba47e82371; Apache-2.0.
+# Disabled unless SUBMISSION_AUTOMATION_ENABLED=true and APP_ID/APP_PRIVATE_KEY are configured.
+name: Process submitted record
+
+# Turns a "Submit metadata record" issue into a validated pull request, so a contributor
+# never needs their own token or write access to this repo — anyone can open an issue on
+# a public repo. Requires the APP_ID and APP_PRIVATE_KEY secrets (see submit-record.yml's
+# header): GITHUB_TOKEN cannot be used for the PR-creation step, or the Validate records
+# check would silently never run on the PR this workflow opens.
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  process:
+    # Guards against other issue templates (e.g. dataset-request.yml) triggering this.
+    # Gated on the title prefix submit-record.yml's form always sets, not the
+    # `submission` label — whether GitHub auto-creates a not-yet-existing label from an
+    # issue form's `labels:` frontmatter isn't something to stake the trigger itself on;
+    # the label gets applied explicitly as a step below instead, once the job is already
+    # running with permission to create it.
+    if: vars.SUBMISSION_AUTOMATION_ENABLED == 'true' && startsWith(github.event.issue.title, '[Submission]:')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # `gh issue edit --add-label` fails outright on a label that doesn't exist yet
+      # (unlike create-pull-request's `labels:`, which creates missing ones) — neither
+      # `submission` nor `needs-changes` are in this repo's default label set, so this
+      # keeps the workflow self-contained instead of depending on someone remembering to
+      # create them by hand. --force makes it idempotent on repeat runs.
+      - name: Ensure labels exist and are applied
+        run: |
+          gh label create submission --color 0e8a16 --description "SFP metadata submission" --force
+          gh label create needs-changes --color d93f0b --description "Submission needs a fix and a new issue" --force
+          gh issue edit "$ISSUE_NUMBER" --add-label submission
+
+      # actions/github-script (first-party) rather than a marketplace form-parser action —
+      # this is handling untrusted user text that ends up committed to the repo, so it's
+      # worth not adding a third-party action to that trust chain for a parse this simple.
+      - name: Parse issue form fields
+        id: parse
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || '';
+            const field = (label) => {
+              const re = new RegExp('### ' + label + '\\s*\\n\\n([\\s\\S]*?)(?=\\n### |$)');
+              const m = body.match(re);
+              return m ? m[1].trim() : '';
+            };
+            const recordId = field('Record ID');
+            // render: yaml wraps the answer in a fenced code block in the rendered body.
+            const yamlContent = field('Full YAML record').replace(/^```ya?ml\r?\n/, '').replace(/```$/, '').trim();
+            core.setOutput('record_id', recordId);
+            core.exportVariable('YAML_CONTENT', yamlContent);
+
+      - name: Validate record_id shape
+        id: guard
+        env:
+          RECORD_ID: ${{ steps.parse.outputs.record_id }}
+        run: |
+          if [[ ! "$RECORD_ID" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
+            gh issue comment "$ISSUE_NUMBER" --body "Record ID \`${RECORD_ID}\` isn't a valid slug (lowercase letters, digits, hyphens only). Please re-generate this submission with a valid \`id\` and open a new issue."
+            gh issue edit "$ISSUE_NUMBER" --add-label needs-changes
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+          echo "record_id=$RECORD_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Write record file
+        if: steps.guard.outputs.ok == 'true'
+        env:
+          RECORD_ID: ${{ steps.guard.outputs.record_id }}
+        run: |
+          mkdir -p "records/${RECORD_ID}"
+          printf '%s\n' "${YAML_CONTENT}" > "records/${RECORD_ID}/${RECORD_ID}.yaml"
+
+      - name: Format YAML with Prettier
+        if: steps.guard.outputs.ok == 'true'
+        env:
+          RECORD_ID: ${{ steps.guard.outputs.record_id }}
+        run: npx --yes prettier@3 --write "records/${RECORD_ID}/${RECORD_ID}.yaml"
+
+      # SFP supports the pinned v0.5.0 release in both intake and PR validation.
+      - name: Read cdh_schema_version from record
+        if: steps.guard.outputs.ok == 'true'
+        id: version
+        env:
+          RECORD_ID: ${{ steps.guard.outputs.record_id }}
+        run: |
+          actual_id=$(yq '.id // ""' "records/${RECORD_ID}/${RECORD_ID}.yaml")
+          if [ "$actual_id" != "$RECORD_ID" ]; then
+            gh issue comment "$ISSUE_NUMBER" --body "Record ID must match the YAML id. Please correct the submission."
+            gh issue edit "$ISSUE_NUMBER" --add-label needs-changes
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          v=$(yq '.cdh_schema_version // ""' "records/${RECORD_ID}/${RECORD_ID}.yaml")
+          if [ "$v" != "v0.5.0" ]; then
+            gh issue comment "$ISSUE_NUMBER" --body "\`cdh_schema_version\` is \`${v:-missing}\` — SFP currently supports only \`v0.5.0\`. Please re-generate this submission and open a new issue."
+            gh issue edit "$ISSUE_NUMBER" --add-label needs-changes
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+          echo "ref=$v" >> "$GITHUB_OUTPUT"
+          # Warn (don't fail) when the record targets an older release than the latest.
+          latest=$(gh release view --repo CGIAR-Climate-Data-Hub/cdh-metadata-standard --json tagName -q .tagName)
+          [ "$v" = "$latest" ] || gh issue comment "$ISSUE_NUMBER" --body "Note: this record uses \`cdh_schema_version: $v\`; the latest release is \`$latest\`. Consider re-generating it with the current Generator."
+
+      - name: Check out CDH tooling
+        if: steps.version.outputs.ok == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: CGIAR-Climate-Data-Hub/cdh-metadata-standard
+          ref: 8cec4dcc61ff40232d2ef1f27f6abb7c17e3e0c7
+          path: _cdh-tooling
+
+      - uses: actions/setup-node@v4
+        if: steps.version.outputs.ok == 'true'
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: _cdh-tooling/package-lock.json
+
+      - name: Install CDH tooling
+        if: steps.version.outputs.ok == 'true'
+        working-directory: _cdh-tooling
+        run: npm ci --ignore-scripts
+
+      # Feedback lives on the issue, not a silently-failing PR — a broken record never
+      # gets a PR opened for it at all.
+      - name: Validate record against CDH profile
+        if: steps.version.outputs.ok == 'true'
+        id: validate
+        env:
+          RECORD_ID: ${{ steps.guard.outputs.record_id }}
+        run: |
+          if ! node _cdh-tooling/scripts/validate-yaml.js \
+              --profile _cdh-tooling/spec/schemas/profiles/cdh.schema.json \
+              "records/${RECORD_ID}/${RECORD_ID}.yaml" > /tmp/validate.log 2>&1; then
+            {
+              echo "This record didn't pass CDH ${{ steps.version.outputs.ref }} schema validation — no pull request was opened."
+              echo
+              echo '```'
+              cat /tmp/validate.log
+              echo '```'
+              echo
+              echo "Please fix these in the Generator and open a new submission issue."
+            } > /tmp/comment.md
+            gh issue comment "$ISSUE_NUMBER" --body-file /tmp/comment.md
+            gh issue edit "$ISSUE_NUMBER" --add-label needs-changes
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+
+      - name: Generate GitHub App token
+        if: steps.validate.outputs.ok == 'true'
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: catalog
+
+      - name: Create pull request
+        if: steps.validate.outputs.ok == 'true'
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          # Only ever stage the record itself — the workspace also holds the
+          # _cdh-tooling checkout (used just to run validate-yaml.js), which
+          # `create-pull-request`'s default `git add -A` would otherwise sweep
+          # in as a broken submodule gitlink (it has its own .git, no
+          # .gitmodules entry).
+          add-paths: records/${{ steps.guard.outputs.record_id }}/${{ steps.guard.outputs.record_id }}.yaml
+          branch: submit/issue-${{ github.event.issue.number }}
+          commit-message: "feat: add ${{ steps.guard.outputs.record_id }} metadata record"
+          title: "feat: add ${{ steps.guard.outputs.record_id }}"
+          body: |
+            ## New SFP metadata record
+
+            **Record ID:** `${{ steps.guard.outputs.record_id }}`
+
+            Closes #${{ github.event.issue.number }}
+
+            ---
+            Passed CDH ${{ steps.version.outputs.ref }} profile validation before this PR was opened. The
+            **Validate records** check below re-runs the same validation as a required gate.
+          labels: submission
+          delete-branch: false
+
+      - name: Comment PR link on the issue
+        if: steps.validate.outputs.ok == 'true'
+        env:
+          PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
+        run: |
+          if [ -n "$PR_URL" ]; then
+            gh issue comment "$ISSUE_NUMBER" --body "Validated. Pull request opened: ${PR_URL}"
+          else
+            gh issue comment "$ISSUE_NUMBER" --body "A pull request already exists for this record ID — check the existing PR."
+          fi
