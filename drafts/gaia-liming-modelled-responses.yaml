@@ -1,0 +1,257 @@
+# yaml-language-server: $schema=https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/schemas/profiles/cdh.schema.json
+# REVIEW DRAFT: provisional roles and unresolved source facts are recorded in note.
+cdh_schema_version: v0.5.0
+extensions:
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/cdh/schema.json
+  - >-
+    https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/agriculture/schema.json
+id: gaia-liming-modelled-responses
+version: '1'
+title: East Africa modelled crop responses to lime
+description: >-
+  GAIA table containing 56 model-estimated crop response summaries across seven named sites and five
+  crops, with lime treatment rates, uncertainty columns and soil attributes. These are modelled
+  summaries, not raw plot observations.
+license: CC-BY-4.0
+resource_type: dataset
+created: '2026-11-06'
+updated: '2026-11-06'
+access: public
+keywords:
+  - soil acidity
+  - liming
+  - soil health
+contact:
+  - organization: International Maize and Wheat Improvement Center (CIMMYT)
+    roles:
+      - producer
+      - licensor
+  - organization: SFP data hub catalogue team
+    roles:
+      - maintainer
+  - organization: International Maize and Wheat Improvement Center (CIMMYT)
+    name: João Vasco Silva
+    email: j.silva@cgiar.org
+    roles:
+      - point-of-contact
+note: >-
+  REVIEW DRAFT. Provisional catalogue roles: CIMMYT as licensor and SFP data hub
+  catalogue team as metadata maintainer. Licensor authority and the accountable organization/person
+  behind the SFP team still require confirmation. Version 1 is a catalogue label for an unversioned
+  source, not an asserted producer release. GAIA/CIMMYT supporting outputs linked through SFP PRMS;
+  not claimed as newly produced SFP data. Absolute yield means and 95% confidence limits are
+  identified from archived source tables and analysis code; the dashboard response plot subtracts
+  the zero-lime mean. All 56 rows and 15 shared columns match the archived table within rounding
+  after joining by site, crop and lime rate. Trial processing selects 0–20 cm soils; laboratory
+  methods and exact input release remain unverified. Source citation is still in preparation with no
+  verified year: citation.date remains omitted. Observation year is unresolved: an older related app
+  says 2020, whereas a newer pipeline filters harvest_year=2022 and season=1; neither alone
+  establishes the year of this exact summary export. Coordinates are absent; no bbox or temporal
+  coverage inferred.
+cdh:
+  domain:
+    - land
+    - agricultural-production
+  usage:
+    intended_uses:
+      - Research and regional assessment of soil acidity and liming responses.
+    not_recommended_for:
+      - use: Direct field-specific lime recommendations
+        reason: >-
+          Modelled estimates need local validation; spatial grids and trial summaries are not
+          field-specific soil tests.
+additional_links:
+  - rel: about
+    title: GAIA project and source contact
+    url: https://www.acidsoils.africa/
+  - rel: via
+    title: Source agronomy dashboard, citation and download licence
+    url: https://www.acidsoils.africa/profitability
+  - rel: describedby
+    title: Trial soil preparation and depth
+    url: >-
+      https://raw.githubusercontent.com/jvasco323/gaia-year1-analysis/674378f3a915ed5cc474c565c02c00001eedc77a/fred-scripts/1-data-wrangling.R
+  - rel: describedby
+    title: Soil units and variable labels
+    url: >-
+      https://raw.githubusercontent.com/jvasco323/gaia-year1-analysis/674378f3a915ed5cc474c565c02c00001eedc77a/analysis-crop-vs-soil.R
+  - rel: describedby
+    title: Site-level soil means and CSV export
+    url: >-
+      https://raw.githubusercontent.com/jvasco323/gaia-year1-analysis/674378f3a915ed5cc474c565c02c00001eedc77a/3-lmm-soil-models.R
+  - rel: describedby
+    title: Yield model estimates and grouping
+    url: >-
+      https://raw.githubusercontent.com/jvasco323/gaia-year1-analysis/674378f3a915ed5cc474c565c02c00001eedc77a/old-scripts/5-lmm-yield-models.R
+  - rel: describedby
+    title: Archived table matching all shared columns
+    url: >-
+      https://raw.githubusercontent.com/EiA2030-ex-ante/profitability-gaia/a35d9a2e8180bbf6f0a22bee7903f6eaeef1e05a/archive/tmp/predicted_means_allcrops_soils_jc.csv
+  - rel: describedby
+    title: Absolute means converted to yield increments
+    url: >-
+      https://raw.githubusercontent.com/EiA2030-ex-ante/profitability-gaia/a35d9a2e8180bbf6f0a22bee7903f6eaeef1e05a/archive/tmp/GAIA_response_profitability_graphs.R
+commodities:
+  - beans
+  - broad-beans
+  - maize
+  - soya-beans
+  - wheat
+citation:
+  title: Unpacking the acid soil complex to explain crop yield responses to lime in East Africa.
+  authors:
+    - family: Silva
+      given: João Vasco
+    - family: Sida
+      given: Tesfaye
+    - family: Gameda
+      given: Samuel
+    - family: Desalegn
+      given: Temesgn
+    - family: Meliyo
+      given: Joel
+    - family: Mwango
+      given: Sibaway
+    - family: Ruganzu
+      given: Vicky
+    - family: Gebrekidan
+      given: Bisrat
+    - family: Jaleta
+      given: Moti
+    - family: Chamberlin
+      given: Jordan
+    - family: Baudron
+      given: Frédéric
+  url: https://www.acidsoils.africa/profitability
+structures:
+  - name: modelled-responses
+    dimensions:
+      - name: site
+        type: location
+        description: Source site name, without coordinates or an authoritative spatial identifier.
+        data_type: string
+        values:
+          - Burera
+          - Geita
+          - Jimma
+          - Mbozi
+          - Misraq Gojjam
+          - Ngororero
+          - Nyaruguru
+      - name: crop
+        type: crop
+        description: 'Source crop labels: bean, fababean (broad/faba bean), maize, soybean and wheat.'
+        data_type: string
+        values:
+          - bean
+          - fababean
+          - maize
+          - soybean
+          - wheat
+    variables:
+      - name: lime_tha
+        description: Lime application rate associated with the model estimate.
+        data_type: number
+        unit: t ha-1
+      - name: emmean
+        description: >-
+          Estimated marginal mean absolute grain yield at the stated lime rate, site and crop; not
+          the yield increment over zero lime.
+        data_type: number
+        unit: t ha-1
+      - name: SE
+        description: Standard error of the estimated marginal mean absolute grain yield.
+        data_type: number
+        unit: t ha-1
+      - name: df
+        description: Degrees of freedom associated with the model estimate.
+        data_type: number
+        unit: '1'
+      - name: lower.CL
+        description: >-
+          Lower limit of the two-sided 95% Student-t confidence interval for mean absolute grain
+          yield.
+        data_type: number
+        unit: t ha-1
+        note: >-
+          All 56 intervals numerically match emmean ± t(0.975,df)*SE to less than 1e-12. These are
+          confidence intervals for means, not prediction intervals for individual fields.
+      - name: upper.CL
+        description: >-
+          Upper limit of the two-sided 95% Student-t confidence interval for mean absolute grain
+          yield.
+        data_type: number
+        unit: t ha-1
+        note: >-
+          All 56 intervals numerically match emmean ± t(0.975,df)*SE to less than 1e-12. These are
+          confidence intervals for means, not prediction intervals for individual fields.
+      - name: .group
+        description: >-
+          Compact-letter-display grouping symbols emitted by multcomp::cld for comparisons of
+          estimated means; stored here as digit strings.
+        data_type: string
+        note: >-
+          Treat as categorical symbols, not numeric measurements. Shared symbols indicate lack of a
+          detected difference under the source test, not proof of equivalence. Exact multiplicity
+          settings for the exported release remain unverified.
+      - name: col
+        description: >-
+          Plotting colour/palette index retained from source analysis; not a measured soil or yield
+          variable.
+        data_type: integer
+      - name: ecec
+        description: >-
+          Site-level model-estimated effective cation exchange capacity: exchangeable acidity plus
+          exchangeable Ca, Mg, Na and K.
+        data_type: number
+        unit: cmol kg-1
+        note: >-
+          Centimoles of positive charge per kilogram (cmol(+)/kg in source labels). Trial soil
+          processing selects 0–20 cm; soil attributes are site summaries, not individual plot
+          measurements.
+      - name: ExAc
+        description: Site-level model-estimated exchangeable acidity.
+        data_type: number
+        unit: cmol kg-1
+        note: >-
+          Centimoles of positive charge per kilogram (cmol(+)/kg in source label); 0–20 cm
+          trial-soil workflow. Extraction/analytical method remains unconfirmed.
+      - name: pH
+        description: Site-level model-estimated soil pH in water.
+        data_type: number
+        unit: '[pH]'
+        note: >-
+          Trial soil workflow selects 0–20 cm. Soil:water ratio and laboratory or prediction method
+          remain unconfirmed.
+      - name: SOC
+        description: Site-level model-estimated soil organic carbon content.
+        data_type: number
+        unit: g kg-1
+        note: >-
+          Unit transcribed from source analysis-crop-vs-soil.R axis label, Soil organic C (g/kg).
+          Original laboratory dictionary was not available to independently verify scaling; treat
+          this unit as provisional. Trial soil workflow selects 0–20 cm.
+      - name: tex
+        description: >-
+          Site-level model-estimated clay plus silt content, computed upstream as 100 minus sand
+          percentage.
+        data_type: number
+        unit: '%'
+        note: >-
+          This is a continuous fine-fraction percentage, not a texture-class code. Trial soil
+          workflow selects 0–20 cm.
+data:
+  - name: modelled-responses
+    description: Source CSV with 56 rows and 15 columns; model estimates, uncertainty and soil covariates.
+    structures:
+      - modelled-responses
+    locations:
+      - url: https://www.acidsoils.africa/data/predicted_means_allcrops_soils.csv
+    media_type: text/csv
+    file_size: 11182
+    checksum: sha256:9f62d163c8ac3aa35091a725e1231aa6527c61775f192942d27fb220b18d6acf
+spatial:
+  geography:
+    - ethiopia
+    - rwanda
+    - united-republic-of-tanzania

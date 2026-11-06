@@ -1,0 +1,252 @@
+# yaml-language-server: $schema=https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/schemas/profiles/cdh.schema.json
+# REVIEW DRAFT: provisional roles and unresolved source facts are recorded in note.
+cdh_schema_version: v0.5.0
+extensions:
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/cdh/schema.json
+id: gaia-acid-soils
+version: '1'
+title: GAIA acid soil management spatial products
+description: >-
+  Four downloaded GAIA spatial products for sub-Saharan Africa: soil pH in water, modelled lime
+  requirement, crop yield loss associated with acidity, and first-year profitability. All-crop
+  aggregates are supplied on their native grids for regional research and investment screening.
+license: CC-BY-4.0
+resource_type: dataset
+created: '2026-11-06'
+updated: '2026-11-06'
+access: public
+keywords:
+  - soil acidity
+  - liming
+  - soil health
+contact:
+  - organization: International Maize and Wheat Improvement Center (CIMMYT)
+    roles:
+      - producer
+      - licensor
+  - organization: SFP data hub catalogue team
+    roles:
+      - maintainer
+  - organization: International Maize and Wheat Improvement Center (CIMMYT)
+    name: João Vasco Silva
+    email: j.silva@cgiar.org
+    roles:
+      - point-of-contact
+note: >-
+  REVIEW DRAFT. Provisional catalogue roles: CIMMYT as licensor and SFP data hub
+  catalogue team as metadata maintainer. Licensor authority and the accountable organization/person
+  behind the SFP team still require confirmation. Version 1 is a catalogue label for an unversioned
+  source, not an asserted producer release. GAIA/CIMMYT supporting outputs linked through SFP PRMS;
+  not claimed as newly produced SFP data. Spatial input reference years differ: crop area and
+  production use SPAM 2010 v2.0; crop prices are medians across sub-Saharan African countries during
+  2016–2020. Neither interval is a soil sampling period or a common observation date for all assets.
+  Soil observation dates remain unspecified. Dashboard methods and publication-linked code establish
+  interpretation, but no published build manifest ties these exact downloaded bytes to a source-code
+  commit. NaN denotes missing values; zero is valid. Ordinary GeoTIFFs, not COGs.
+cdh:
+  domain:
+    - land
+    - agricultural-production
+  usage:
+    intended_uses:
+      - Research and regional assessment of soil acidity and liming responses.
+    not_recommended_for:
+      - use: Direct field-specific lime recommendations
+        reason: >-
+          Modelled estimates need local validation; spatial grids and trial summaries are not
+          field-specific soil tests.
+additional_links:
+  - rel: about
+    title: GAIA project and source contact
+    url: https://www.acidsoils.africa/
+  - rel: via
+    title: Source spatial dashboard and download licence
+    url: https://www.acidsoils.africa/data
+  - rel: describedby
+    title: Spatial input provenance
+    url: https://www.acidsoils.africa/methods/data-sources
+  - rel: describedby
+    title: Lime model and incorporation depth
+    url: https://www.acidsoils.africa/methods/lime-requirements
+  - rel: describedby
+    title: Gross margin definition and baseline prices
+    url: https://www.acidsoils.africa/methods/profitability
+  - rel: describedby
+    title: Pinned soil preprocessing code
+    url: >-
+      https://raw.githubusercontent.com/EiA2030-ex-ante/gaia-ex-ante-wow/a3c8a937a80ab3646a9c12ae285ded4cb46506a3/wow-1-layers-soilgrids.R
+  - rel: describedby
+    title: Pinned economics code
+    url: >-
+      https://raw.githubusercontent.com/EiA2030-ex-ante/gaia-ex-ante-wow/a3c8a937a80ab3646a9c12ae285ded4cb46506a3/wow-7-profitability-function.R
+citation:
+  title: Soil acidity remediation in sub-Saharan Africa requires targeted investments
+  authors:
+    - family: Silva
+      given: João Vasco
+    - family: Aramburu-Merlos
+      given: Fernando
+    - family: Baudron
+      given: Frédéric
+    - family: Gameda
+      given: Samuel
+    - family: Sida
+      given: Tesfaye Shiferaw
+    - family: Ruganzu
+      given: Vicky
+    - family: Meliyo
+      given: Joel
+    - family: Jaleta
+      given: Moti
+    - family: Chamberlin
+      given: Jordan
+    - family: Hijmans
+      given: Robert J.
+  date: '2025-07-25'
+  publisher: Nature Food 6, 799–808
+  url: https://doi.org/10.1038/s43016-025-01194-z
+spatial:
+  bbox:
+    - -17.525
+    - -34.86666666666667
+    - 51.475
+    - 27.299999999999997
+  crs: EPSG:4326
+  geography:
+    - sub-saharan-africa
+structures:
+  - name: soil_ph
+    dimensions:
+      - name: cell
+        type: xy
+        description: Regular 30 arc-second grid; approximately 1 km at the equator.
+        step: 0.008333333333333333
+        unit: degree
+    variables:
+      - name: soil_ph
+        description: >-
+          Soil pH in water for the top 0–30 cm of soil, calculated as a depth-weighted average of
+          the 0–5, 5–15 and 15–30 cm source layers.
+        data_type: float32
+        nodata: NaN
+        note: >-
+          Depth weighting in publication-linked code is (5*pH_0_5 + 10*pH_5_15 + 15*pH_15_30)/30.
+          Soil sampling/reference dates are not specified.
+        unit: '[pH]'
+  - name: lime_all
+    dimensions:
+      - name: cell
+        type: xy
+        description: Regular 5 arc-minute grid; approximately 9 km at the equator.
+        step: 0.08333333333333333
+        unit: degree
+    variables:
+      - name: lime_all
+        description: >-
+          Crop-area-weighted lime requirement, expressed as tonnes of CaCO3 per hectare, to reach
+          crop-specific target acidity saturation.
+        data_type: float32
+        nodata: NaN
+        note: >-
+          Assumes 20 cm lime incorporation depth; this differs from the 0–30 cm averaging depth of
+          pH and other soil inputs. LiTAS model uses crop-specific target acidity saturation, not
+          one universal pH target. Dashboard methods specify harvested-area weighting across crops.
+        unit: t ha-1
+  - name: yloss_all
+    dimensions:
+      - name: cell
+        type: xy
+        description: Regular 5 arc-minute grid; approximately 9 km at the equator.
+        step: 0.08333333333333333
+        unit: degree
+    variables:
+      - name: yloss_all
+        description: Crop-area-weighted percentage crop yield loss associated with soil acidity.
+        data_type: float32
+        nodata: NaN
+        note: >-
+          Dashboard methods specify crop-area weighting. Model code limits relative yield to 0.2–1,
+          corresponding to a maximum modelled loss of 80%; this is a model constraint, not an
+          empirical upper bound.
+        unit: '%'
+  - name: profit_all
+    dimensions:
+      - name: cell
+        type: xy
+        description: Regular 5 arc-minute grid; approximately 9 km at the equator.
+        step: 0.08333333333333333
+        unit: degree
+    variables:
+      - name: profit_all
+        description: >-
+          Crop-area-weighted first-year gross margin from liming: additional crop revenue minus lime
+          cost, in US dollars per hectare.
+        data_type: float32
+        nodata: NaN
+        note: >-
+          Dashboard baseline: crop-specific median prices across sub-Saharan African countries for
+          2016–2020 and fixed lime price 100 USD/t; publication-linked code uses baseline yield
+          multiplier 1. This is incremental gross margin, not total farm profit. Inflation/base-year
+          adjustment is not documented; do not label as constant-year dollars.
+        unit: '{USD}/ha'
+data:
+  - name: soil_ph
+    description: Soil pH in water
+    structures:
+      - soil_ph
+    locations:
+      - url: https://gaia-tiles.superservice-international.com/raw/soil/soil_ph.tif
+    media_type: image/tiff; application=geotiff
+    file_size: 58074353
+    checksum: sha256:38a4ae0918454b1423d94f635524110d17f9d792679c2004d00bfd4adce5f2ca
+    spatial:
+      bbox:
+        - -17.525
+        - -34.833333333333336
+        - 51.416666666666664
+        - 27.299999999999997
+  - name: lime_all
+    description: Lime requirement, all crops
+    structures:
+      - lime_all
+    locations:
+      - url: https://gaia-tiles.superservice-international.com/raw/lime/lime_all.tif
+    media_type: image/tiff; application=geotiff
+    file_size: 332006
+    checksum: sha256:4799f9d055ca8cad2808e18fcc5ee00cdc2a6b5cc1379ef60c529012eace11ac
+    spatial:
+      bbox:
+        - -17.525
+        - -34.86666666666667
+        - 51.475
+        - 27.299999999999997
+  - name: yloss_all
+    description: Crop yield loss, all crops
+    structures:
+      - yloss_all
+    locations:
+      - url: https://gaia-tiles.superservice-international.com/raw/yield_loss/yloss_all.tif
+    media_type: image/tiff; application=geotiff
+    file_size: 485403
+    checksum: sha256:07e46ef138e940017d43f7703a191eb4a01198ea30fe78d834ae47239db3341c
+    spatial:
+      bbox:
+        - -17.525
+        - -34.86666666666667
+        - 51.475
+        - 27.299999999999997
+  - name: profit_all
+    description: First-year profit, all crops
+    structures:
+      - profit_all
+    locations:
+      - url: https://gaia-tiles.superservice-international.com/raw/profit/profit_all.tif
+    media_type: image/tiff; application=geotiff
+    file_size: 369528
+    checksum: sha256:88917def9c536aa3b8230e1dc289dbb39321064fdf37a46bbfd6a1aa2497c995
+    spatial:
+      bbox:
+        - -17.525
+        - -34.86666666666667
+        - 51.475
+        - 27.299999999999997

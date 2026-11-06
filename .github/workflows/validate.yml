@@ -1,0 +1,36 @@
+name: Validate published metadata
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check for published records
+        id: records
+        run: |
+          if find records -type f \( -name '*.yaml' -o -name '*.yml' \) | grep -q .; then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'No approved records. Drafts are intentionally excluded.'
+          fi
+      - uses: actions/checkout@v7
+        if: steps.records.outputs.present == 'true'
+        with:
+          repository: CGIAR-Climate-Data-Hub/cdh-metadata-standard
+          ref: 8cec4dcc61ff40232d2ef1f27f6abb7c17e3e0c7
+          path: .standard
+      - uses: actions/setup-node@v6
+        if: steps.records.outputs.present == 'true'
+        with:
+          node-version: 24
+      - if: steps.records.outputs.present == 'true'
+        working-directory: .standard
+        run: |
+          npm ci --ignore-scripts
+          node scripts/validate-yaml.js --profile spec/schemas/profiles/cdh.schema.json ../records
