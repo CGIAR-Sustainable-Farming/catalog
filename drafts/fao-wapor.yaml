@@ -1,0 +1,113 @@
+# yaml-language-server: $schema=https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/schemas/profiles/cdh.schema.json
+# SFP catalogue draft. FAO serves the source data.
+cdh_schema_version: v0.5.0
+extensions:
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/cdh/schema.json
+id: fao-wapor
+title: FAO WaPOR agricultural water productivity, biomass and evapotranspiration
+version: "3"
+resource_type: dataset
+created: '2026-11-16'
+updated: '2026-11-17'
+access: public
+description: >-
+  WaPOR maps how much water vegetation consumes and how much biomass it produces.
+  The Food and Agriculture Organization of the United Nations (FAO) combines satellite
+  observations and weather inputs to estimate evapotranspiration, biomass production
+  and water productivity. Use the portal to select an area and season, compare
+  irrigated and rainfed areas, or download rasters. Version 3 begins in 2018.
+  The global level has nominal 300 m pixels. The 100 m level covers Africa, the
+  Near East, Colombia, Pakistan and Sri Lanka. Selected irrigation schemes and
+  other project areas have 20 m data.
+keywords: [water productivity, irrigation, rainfed agriculture, biomass, evapotranspiration, net primary production, remote sensing]
+license: CC-BY-4.0
+attribution: >-
+  Credit FAO, WaPOR version 3, layer, level, period, source URL and access date.
+  FAO's Statistical Database Terms of Use apply. Check the selected layer for
+  third-party credits and any specific licence terms.
+contact:
+  - organization: Food and Agriculture Organization of the United Nations
+    roles: [producer, licensor]
+    url: https://www.fao.org/in-action/remote-sensing-for-water-productivity/
+  - organization: SFP Data Hub catalogue team
+    roles: [maintainer]
+citation:
+  authors:
+    - organization: Food and Agriculture Organization of the United Nations
+  title: WaPOR database, version 3
+  date: '2023'
+  publisher: FAO
+  url: https://data.apps.fao.org/wapor/
+spatial:
+  geography: [world]
+temporal:
+  start_date: '2018'
+  end_date: null
+cdh:
+  domain: [agricultural-production, hydrology]
+  usage:
+    intended_uses:
+      - Compare water consumption and biomass production across irrigation schemes or growing seasons.
+      - Locate areas with unusually low biomass production per unit of water consumed for follow-up.
+    not_recommended_for:
+      - use: Estimating a field’s grain harvest or metered irrigation delivery from biomass and evapotranspiration alone
+        reason: Biomass includes non-grain tissue. Evapotranspiration includes water supplied by rainfall. Pixels may span several fields.
+note: >-
+  Availability, units, update latency and quality flags vary by layer and level.
+  Many layers use ten-day periods (dekads). For a dekadal daily rate, multiply by
+  the number of days represented before summing over a season. FAO revised Level 3
+  outputs originally distributed before July 2024. Use the current portal release.
+data:
+  - name: alaba-2024-pilot
+    description: >-
+      SFP-hosted Zarr subset for Alaba, Ethiopia. Covers 36 ten-day periods in
+      2024 for Level 2 net primary production (npp) and actual evapotranspiration
+      and interception (aeti). Open the store URL with xarray.open_zarr using
+      consolidated metadata. SFP preserved the FAO grid, values and validity
+      masks. Each chunk spans six periods and up to 256 by 256 pixels.
+    spatial:
+      bbox: [37.8994140625, 7.1494140625, 38.5, 7.7607421875]
+    locations:
+      - title: SFP Alaba 2024 pilot Zarr store
+        url: https://digital-atlas.s3.amazonaws.com/cdh/sfp/wapor-v3/alaba-2024/release-20261117/wapor-alaba-2024.zarr
+  - name: npp-cloud-files
+    description: >-
+      FAO's public list of Level 2 net primary production Cloud Optimized GeoTIFFs,
+      one per ten-day period. Each item's name contains its date and mediaLink
+      opens the raster directly. If nextPageToken is present, pass it as pageToken
+      to continue. HTTP byte ranges allow reading a spatial window.
+    media_type: application/json
+    locations:
+      - title: FAO cloud file list for Level 2 net primary production
+        url: 'https://storage.googleapis.com/storage/v1/b/fao-gismgr-wapor-3-data/o?prefix=DATA/WAPOR-3/MAPSET/L2-NPP-D/&matchGlob=**.tif&fields=nextPageToken,items(name,mediaLink)'
+  - name: aeti-cloud-files
+    description: >-
+      FAO's public list of Level 2 actual evapotranspiration and interception
+      Cloud Optimized GeoTIFFs, one per ten-day period. Open an item's mediaLink
+      to read the raster. Continue with pageToken if the response includes nextPageToken.
+    media_type: application/json
+    locations:
+      - title: FAO cloud file list for Level 2 actual evapotranspiration and interception
+        url: 'https://storage.googleapis.com/storage/v1/b/fao-gismgr-wapor-3-data/o?prefix=DATA/WAPOR-3/MAPSET/L2-AETI-D/&matchGlob=**.tif&fields=nextPageToken,items(name,mediaLink)'
+  - name: portal
+    description: Select WaPOR version 3, a layer, dates and an area of interest to view values or download raster data.
+    locations:
+      - title: FAO WaPOR data portal
+        url: https://data.apps.fao.org/wapor/
+  - name: npp-example
+    description: Level 2 net primary production Cloud Optimized GeoTIFF for 1–10 January 2018. Mask −9999 and multiply stored values by 0.001 to obtain grams of carbon per square metre per day.
+    media_type: image/tiff
+    locations:
+      - title: Read FAO net primary production raster directly
+        url: https://storage.googleapis.com/fao-gismgr-wapor-3-data/DATA/WAPOR-3/MAPSET/L2-NPP-D/WAPOR-3.L2-NPP-D.2018-01-D1.tif
+  - name: aeti-example
+    description: Level 2 actual evapotranspiration and interception Cloud Optimized GeoTIFF for 1–10 January 2018.
+    media_type: image/tiff
+    locations:
+      - title: Read FAO actual evapotranspiration and interception raster directly
+        url: https://storage.googleapis.com/fao-gismgr-wapor-3-data/DATA/WAPOR-3/MAPSET/L2-AETI-D/WAPOR-3.L2-AETI-D.2018-01-D1.tif
+additional_links:
+  - {rel: describedby, title: Alaba pilot source rasters and conversion details, url: 'https://digital-atlas.s3.amazonaws.com/cdh/sfp/wapor-v3/alaba-2024/release-20261117/wapor-alaba-2024.zarr/provenance.json'}
+  - {rel: describedby, title: WaPOR variables and coverage, url: 'https://www.fao.org/in-action/remote-sensing-for-water-productivity/wapor-data/en/'}
+  - {rel: describedby, title: 'FAO downloads, API and Earth Engine collection identifiers', url: 'https://www.fao.org/in-action/remote-sensing-for-water-productivity/wapor-data-access/en'}
+  - {rel: license, title: FAO Statistical Database Terms of Use, url: 'https://www.fao.org/contact-us/terms/db-terms-of-use/'}
