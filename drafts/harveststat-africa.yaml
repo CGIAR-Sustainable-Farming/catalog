@@ -1,0 +1,107 @@
+# yaml-language-server: $schema=https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/schemas/profiles/cdh.schema.json
+# SFP catalogue draft. Dryad holds the dataset of record.
+cdh_schema_version: v0.5.0
+extensions:
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/cdh/schema.json
+id: harveststat-africa
+title: HarvestStat Africa subnational crop area, production and yield
+version: v1.2
+resource_type: dataset
+created: '2026-11-16'
+updated: '2026-11-17'
+doi: 10.5061/dryad.vq83bk42w
+access: public
+description: >-
+  HarvestStat Africa brings together crop statistics reported by national and
+  subnational agencies and compiled by the Famine Early Warning Systems Network
+  (FEWS NET). The v1.2 table contains 217,487 records for 92 crop products in
+  33 sub-Saharan African countries. Select a crop, reporting unit, season and
+  production system to retrieve area in hectares, production in metric tonnes
+  and yield in tonnes per hectare. Join the table to the supplied administrative
+  boundaries using the FEWS NET geographic identifier (fnid).
+keywords: [crop yields, harvested area, crop production, subnational statistics, growing seasons, FEWS NET, administrative boundaries]
+license: CC0-1.0
+attribution: >-
+  The licence describes the harmonized dataset deposited in Dryad. Cite Lee and
+  colleagues, the Dryad dataset DOI, v1.2 and the Scientific Data methods paper.
+  For original agency sources, consult Supplementary Table S1 of the paper.
+contact:
+  - organization: HarvestStat Africa dataset authors
+    roles: [producer, licensor]
+    url: https://doi.org/10.5061/dryad.vq83bk42w
+  - organization: University of Manitoba
+    name: Donghoon Lee
+    email: Donghoon.Lee@umanitoba.ca
+    roles: [point-of-contact]
+  - organization: SFP Data Hub catalogue team
+    roles: [maintainer]
+spatial:
+  geography: [sub-saharan-africa]
+  crs: EPSG:4326
+temporal:
+  start_date: '1960'
+  end_date: '2026'
+related_publications:
+  - doi: 10.1038/s41597-025-05001-z
+cdh:
+  domain: [agricultural-production, boundaries]
+  usage:
+    intended_uses:
+      - Compare crop production or yield over time within a reporting unit and season.
+      - Map subnational production patterns using the boundary file from the same release.
+    not_recommended_for:
+      - use: Inferring individual farm yields or treatment effects
+        reason: Each estimate summarizes an administrative reporting unit. Survey coverage, source methods and production-system detail vary.
+note: >-
+  The harvest years above are the earliest and latest present anywhere in the
+  release. Most series cover shorter periods and contain gaps. Recent seasons can
+  be incomplete. Planting and harvest months identify the reporting season.
+  Inspect qc_flag before comparing trends. Ethiopia uses the 2021 boundary keys
+  in v1.2, including for earlier harvest years. Join observations to the v1.2
+  boundaries on fnid. All 1,041 reporting-unit keys match exactly one of the
+  1,128 boundary features. The other 87 features have no observations in this
+  release. SFP hosts both files in the v1.2 release directory. The manifest
+  records source and hosted file checksums and the verified boundary join.
+structures:
+  - name: statistics
+    variables:
+      - {name: fnid, data_type: string, description: FEWS NET reporting-unit key shared with the boundary file.}
+      - {name: product, data_type: string, description: Reported crop or crop product.}
+      - {name: season_name, data_type: string, description: Locally named reporting season.}
+      - {name: harvest_year, data_type: integer, description: Calendar year assigned to the end of the reporting season.}
+      - {name: crop_production_system, data_type: string, description: Production system or aggregate used by the source.}
+      - {name: area, data_type: number, unit: ha, description: Reported crop area.}
+      - {name: production, data_type: number, unit: t, description: Crop quantity produced in metric tonnes.}
+      - {name: yield, data_type: number, unit: t ha-1, description: Crop yield per hectare.}
+      - {name: qc_flag, data_type: integer, description: 'Quality flag. 0 = unflagged, 1 = outlier, 2 = low variance.'}
+data:
+  - name: crop-statistics
+    description: SFP-hosted v1.2 Parquet table of crop area, production and yield. Join fnid to fnid in reporting-boundaries.
+    media_type: application/vnd.apache.parquet
+    file_size: 4256124
+    structures: [statistics]
+    locations:
+      - title: Download crop statistics
+        url: https://digital-atlas.s3.amazonaws.com/cdh/sfp/harveststat-africa/v1.2/hvstat_africa_data_v1.2.parquet
+  - name: reporting-boundaries
+    description: Matching v1.2 reporting units in GeoParquet 1.1. Each fnid identifies one feature.
+    media_type: application/vnd.apache.parquet
+    file_size: 6247905
+    locations:
+      - title: Download matching reporting boundaries
+        url: https://digital-atlas.s3.amazonaws.com/cdh/sfp/harveststat-africa/v1.2/hvstat_africa_boundary_v1.2.parquet
+  - name: release
+    description: >-
+      The v1.2 release ZIP contains the crop statistics CSV, matched GeoPackage
+      and zipped Shapefile, documentation and raw FEWS NET extracts. The Dryad
+      landing page also lists individual files.
+    media_type: application/zip
+    locations:
+      - title: Download v1.2 Dryad deposit packaged by HarvestStat
+        url: https://github.com/HarvestStat/HarvestStat-Africa/releases/download/v1.2/doi_10_5061_dryad_vq83bk42w__v20260717.zip
+    structures: [statistics]
+additional_links:
+  - {rel: describedby, title: SFP file manifest and join verification, url: 'https://digital-atlas.s3.amazonaws.com/cdh/sfp/harveststat-africa/v1.2/manifest.json'}
+  - {rel: describedby, title: Dryad dataset and individual files, url: 'https://doi.org/10.5061/dryad.vq83bk42w'}
+  - {rel: describedby, title: Version history and boundary changes, url: 'https://github.com/HarvestStat/HarvestStat-Africa/releases/tag/v1.2'}
+  - {rel: license, title: Dryad deposit rights declaration, url: 'https://api.datacite.org/dois/10.5061/dryad.vq83bk42w'}
